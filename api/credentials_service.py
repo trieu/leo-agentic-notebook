@@ -69,7 +69,7 @@ PROVIDER_MODALITIES: Dict[str, List[str]] = {
     "mistral": ["language", "embedding"],
     "deepseek": ["language"],
     "xai": ["language"],
-    "openrouter": ["language"],
+    "openrouter": ["language", "embedding"],
     "voyage": ["embedding"],
     "elevenlabs": ["text_to_speech"],
     "ollama": ["language", "embedding"],
