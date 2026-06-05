@@ -1,4 +1,4 @@
-name: Claude Code Review
+name: Gemini Code Review
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ on:
     #   - "src/**/*.jsx"
 
 jobs:
-  claude-review:
+  gemini-review:
     # Run for fork PRs (via pull_request_target) OR same-repo PRs (via pull_request), but not both
     if: |
       (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository) ||
@@ -34,15 +34,19 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
+      - name: Run Gemini Code Review
+        id: gemini-review
+        uses: google-github-actions/run-gemini-cli@v0
         with:
+          # github_token is used by the Gemini CLI to read the PR and post the review.
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-
+          # API key from Google AI Studio (https://aistudio.google.com/apikey).
+          # For Vertex AI / Workload Identity instead, see the action's docs and use
+          # gcp_workload_identity_provider / gcp_project_id with use_vertex_ai: true.
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+            Read the PR diff, then identify bugs, security issues, and code-quality problems.
+            Post your findings as a review comment on the PR.
+          # See https://github.com/google-github-actions/run-gemini-cli
+          # for available inputs (settings, gemini_cli_version, model, etc.).
